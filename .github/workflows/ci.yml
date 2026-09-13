@@ -1,0 +1,21 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m py_compile simulate.py
+      - run: |
+          python - <<'PY'
+          from simulate import generate
+          out=generate('mixed',9,42)
+          assert len(out)==9
+          assert all(e['raw']['synthetic'] is True for e in out)
+          assert {e['kind'] for e in out}=={'flood','wildfire','earthquake'}
+          PY
